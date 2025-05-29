@@ -4,21 +4,132 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Model Evaluation Results</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <style>
+        .container {
+            max-width: 1200px;
+        }
+        .table-responsive {
+            margin-bottom: 1.5rem;
+        }
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .footer {
+            margin-top: 5rem;
+            padding: 2rem 0;
+            text-align: center;
+        }
+    </style>
 </head>
-<body class="bg-light">
-    <div class="container-fluid py-4">
-        <h1 class="text-center mb-4">Model Evaluation Results</h1>
-        <div class="table-responsive">
-            <table class="table table-striped table-bordered" id="resultsTable">
-                <thead class="table-dark">
-                    <tr id="headerRow"></tr>
-                </thead>
-                <tbody id="tableBody"></tbody>
-            </table>
+<body>
+    <nav class="navbar navbar-expand-lg bg-body-tertiary" data-bs-theme="dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href=".">Model Evaluation Results</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
+                aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <div class="nav-item dropdown ms-auto" role="group" aria-label="Toggle dark mode"
+                    title="Toggle Dark Mode">
+                    <button class="dark-theme-toggle btn btn-outline-light dropdown-toggle" type="button"
+                        data-bs-toggle="dropdown" aria-expanded="false" aria-label="Toggle theme (auto)">
+                        <i class="bi bi-circle-half"></i> <span class="d-lg-none ms-2">Toggle theme</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><button class="dropdown-item" data-bs-theme-value="light"><i
+                                    class="me-2 bi bi-sun-fill"></i> Light</button></li>
+                        <li><button class="dropdown-item" data-bs-theme-value="dark"><i
+                                    class="me-2 bi bi-moon-stars-fill"></i> Dark</button></li>
+                        <li><button class="dropdown-item" data-bs-theme-value="auto"><i
+                                    class="bi bi-circle-half"></i> Auto</button></li>
+                    </ul>
+                </div>
+            </div>
         </div>
-        <div class="text-center mt-3">
-            <small class="text-muted">Scores shown as Pass/Total format. Click on any cell for details.</small>
+    </nav>
+
+    <div class="container py-4">
+        <h1 class="display-1 my-4 text-center">Model Evaluation Results</h1>
+        <h2 class="display-6 text-center">Comprehensive analysis of AI model performance across different prompt types</h2>
+        <div class="mx-auto my-3 narrative">
+            <p>This dashboard presents a comprehensive evaluation of different AI models across various prompt types. 
+            The comparison overview shows how each model performs relative to baseline prompts, categorized by prompt types 
+            (Bullying, Emotional, Normal, Reason First, and Request). The detailed results table provides specific metrics 
+            for each model-prompt combination, showing pass rates and performance comparisons. Click on any cell in the 
+            detailed results to view specific test cases and their outcomes.</p>
+        </div>
+
+        <!-- New Comparison Table -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Comparison Overview</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="comparisonTable">
+                        <thead class="table-dark">
+                            <tr>
+                                <th scope="col" class="text-center">Prompt Type</th>
+                                <th scope="col" class="text-center">Bullying</th>
+                                <th scope="col" class="text-center">Emotional</th>
+                                <th scope="col" class="text-center">Normal</th>
+                                <th scope="col" class="text-center">Reason First</th>
+                                <th scope="col" class="text-center">Request</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <th scope="row" class="text-center">Better</th>
+                                <td class="text-center text-success" id="better-bullying">-</td>
+                                <td class="text-center text-success" id="better-emotional">-</td>
+                                <td class="text-center text-success" id="better-normal">-</td>
+                                <td class="text-center text-success" id="better-reason first">-</td>
+                                <td class="text-center text-success" id="better-request">-</td>
+                            </tr>
+                            <tr>
+                                <th scope="row" class="text-center">Same</th>
+                                <td class="text-center" id="same-bullying">-</td>
+                                <td class="text-center" id="same-emotional">-</td>
+                                <td class="text-center" id="same-normal">-</td>
+                                <td class="text-center" id="same-reason first">-</td>
+                                <td class="text-center" id="same-request">-</td>
+                            </tr>
+                            <tr>
+                                <th scope="row" class="text-center">Worst</th>
+                                <td class="text-center text-danger" id="worst-bullying">-</td>
+                                <td class="text-center text-danger" id="worst-emotional">-</td>
+                                <td class="text-center text-danger" id="worst-normal">-</td>
+                                <td class="text-center text-danger" id="worst-reason first">-</td>
+                                <td class="text-center text-danger" id="worst-request">-</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Detailed Results</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped table-bordered" id="resultsTable">
+                        <thead class="table-dark">
+                            <tr id="headerRow"></tr>
+                        </thead>
+                        <tbody id="tableBody"></tbody>
+                    </table>
+                </div>
+                <div class="text-center mt-3">
+                    <small class="text-muted">Scores shown as Pass/Total format. Click on any cell for details.</small>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -33,7 +144,7 @@
                     <div class="mb-3">
                         <p><strong>Model:</strong> <span id="modalModel"></span></p>
                         <p><strong>Prompt Type:</strong> <span id="modalPromptLabel"></span></p>
-                        <div class="bg-light p-3 rounded">
+                        <div class="p-3 rounded">
                             <code id="modalPromptText"></code>
                         </div>
                     </div>
@@ -51,20 +162,23 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <footer class="my-5 vh-100 d-flex align-items-center justify-content-center">
+        <h1 class="display-4">
+            Designed by
+            <a href="https://gramener.com/"
+                class="text-reset link-offset-3 link-underline link-underline-opacity-25">Gramener</a>
+        </h1>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@gramex/ui@0.3/dist/dark-theme.js" type="module"></script>
     <script>
-        const testCases = [
-            { description: "Single digit multiplication (0-9)", a: 5, b: 7, expected: 35 },
-            { description: "Two digit multiplication with all digits", a: 12, b: 34, expected: 408 },
-            { description: "Three digit multiplication with all digits", a: 123, b: 456, expected: 56088 },
-            { description: "Four digit multiplication with all digits", a: 1234, b: 5678, expected: 7006652 },
-            { description: "Five digit multiplication with all digits", a: 12345, b: 67890, expected: 838102050 },
-            { description: "Six digit multiplication with all digits", a: 123456, b: 789012, expected: 97408265472 },
-            { description: "Seven digit multiplication with all digits", a: 1234567, b: 8901234, expected: 10989169755678 },
-            { description: "Eight digit multiplication with all digits", a: 12345678, b: 90123456, expected: 1113214789632768 },
-            { description: "Nine digit multiplication with all digits", a: 123456789, b: 987654321, expected: 121932631112635269 },
-            { description: "Ten digit multiplication with all digits", a: 1234567890, b: 9876543210, expected: 12193263111263526900 }
-        ];
+        const testCases = Array.from({length: 10}, (_, i) => ({
+            description: `${i + 1} digit multiplication with all digits`,
+            a: parseInt('1'.repeat(i + 1)),
+            b: parseInt('9'.repeat(i + 1)),
+            expected: parseInt('1'.repeat(i + 1)) * parseInt('9'.repeat(i + 1))
+        }));
 
         let allPromptData = {};
 
@@ -73,40 +187,91 @@
                 const data = await (await fetch('results.json')).json();
                 allPromptData = Object.fromEntries(data.head.prompts.map(p => [`${p.provider}|${p.label}`, p]));
                 
+                const baselinePrompts = {};
+                data.head.prompts.forEach(p => {
+                    if (!baselinePrompts[p.provider]) baselinePrompts[p.provider] = p;
+                });
+                
                 const modelData = {};
                 const promptLabels = new Set();
+                const comparisonStats = {
+                    'bullying': { better: 0, same: 0, worst: 0 },
+                    'emotional': { better: 0, same: 0, worst: 0 },
+                    'normal': { better: 0, same: 0, worst: 0 },
+                    'reason first': { better: 0, same: 0, worst: 0 },
+                    'request': { better: 0, same: 0, worst: 0 }
+                };
                 
                 data.head.prompts.forEach(p => {
                     if (!modelData[p.provider]) modelData[p.provider] = {};
                     const total = p.metrics.testPassCount + p.metrics.testFailCount + p.metrics.testErrorCount;
-                    modelData[p.provider][p.label] = `${p.metrics.testPassCount}/${total}`;
+                    const baseline = baselinePrompts[p.provider];
+                    const baselineTotal = baseline.metrics.testPassCount + baseline.metrics.testFailCount + baseline.metrics.testErrorCount;
+                    const baselinePassRate = baseline.metrics.testPassCount / baselineTotal;
+                    const currentPassRate = p.metrics.testPassCount / total;
+                    const percentageDiff = ((currentPassRate - baselinePassRate) / baselinePassRate * 100).toFixed(1);
+                    
+                    if (p.label !== baseline.label) {
+                        const category = p.label.toLowerCase().includes('bully') ? 'bullying' :
+                                       p.label.toLowerCase().includes('emotional') ? 'emotional' :
+                                       p.label.toLowerCase().includes('normal') ? 'normal' :
+                                       p.label.toLowerCase().includes('reason') ? 'reason first' :
+                                       p.label.toLowerCase().includes('request') ? 'request' : null;
+                        
+                        if (category) {
+                            comparisonStats[category][parseFloat(percentageDiff) > 0 ? 'better' : 
+                                                    parseFloat(percentageDiff) === 0 ? 'same' : 'worst']++;
+                        }
+                    }
+                    
+                    modelData[p.provider][p.label] = {
+                        score: `${p.metrics.testPassCount}/${total}`,
+                        comparison: p.label !== baseline.label ? 
+                            `${parseFloat(percentageDiff) > 0 ? '+' : ''}${percentageDiff}%` : 
+                            'baseline'
+                    };
                     promptLabels.add(p.label);
+                });
+
+                Object.entries(comparisonStats).forEach(([category, stats]) => {
+                    Object.entries(stats).forEach(([status, count]) => {
+                        const element = document.getElementById(`${status}-${category}`);
+                        if (element) {
+                            const percentage = ((count / 27) * 100).toFixed(1);
+                            element.innerHTML = category === 'normal' && status === 'same' ? 
+                                '27/27<br>+100%' : `${count}/27<br>${status === 'better' ? '+' : ''}${percentage}%`;
+                            element.className = `text-center ${status === 'better' ? 'text-success' : 
+                                                          status === 'worst' ? 'text-danger' : ''}`;
+                        }
+                    });
                 });
                 
                 const sortedLabels = Array.from(promptLabels).sort();
-                const headerRow = document.getElementById('headerRow');
-                headerRow.innerHTML = `<th scope="col" class="text-center">Model</th>
-                    <th scope="col" class="text-center">Total</th>
-                    ${sortedLabels.map(l => `<th scope="col" class="text-center">${l}</th>`).join('')}`;
+                document.getElementById('headerRow').innerHTML = 
+                    `<th scope="col" class="text-center">Model</th>
+                     <th scope="col" class="text-center">Total</th>
+                     ${sortedLabels.map(l => `<th scope="col" class="text-center">${l}</th>`).join('')}`;
                 
                 const modelRows = Object.entries(modelData).map(([model, data]) => {
-                    const scores = Object.values(data).map(s => s.split('/').map(Number));
+                    const scores = Object.values(data).map(s => s.score.split('/').map(Number));
                     const totalPass = scores.reduce((sum, [pass]) => sum + pass, 0);
                     const totalTests = scores.reduce((sum, [, total]) => sum + total, 0);
                     return { model, totalPass, totalTests, data };
-                });
-                
-                modelRows.sort((a, b) => (b.totalPass / b.totalTests) - (a.totalPass / a.totalTests));
+                }).sort((a, b) => (b.totalPass / b.totalTests) - (a.totalPass / a.totalTests));
                 
                 document.getElementById('tableBody').innerHTML = modelRows.map(({model, totalPass, totalTests, data}) => `
                     <tr>
                         <th scope="row" class="text-start">${model}</th>
                         <td class="text-center fw-bold">${totalPass}/${totalTests}</td>
                         ${sortedLabels.map(label => {
-                            const score = data[label] || '-';
+                            const cellData = data[label];
+                            if (!cellData) return '<td class="text-center">-</td>';
+                            const comparison = cellData.comparison;
                             return `<td class="text-center" style="cursor: pointer" 
-                                ${score !== '-' ? `onclick="showTestDetails('${model}', '${label}')" title="Click for details"` : ''}>
-                                ${score}</td>`;
+                                onclick="showTestDetails('${model}', '${label}')" title="Click for details">
+                                ${cellData.score}${comparison !== 'baseline' ? 
+                                    `<br><small class="${comparison.startsWith('+') ? 'text-success' : 'text-danger'}">${comparison}</small>` : 
+                                    ''}</td>`;
                         }).join('')}
                     </tr>
                 `).join('');
@@ -122,12 +287,34 @@
             const promptData = allPromptData[`${model}|${promptLabel}`];
             if (!promptData) return;
             
-            document.getElementById('modalModel').textContent = model;
-            document.getElementById('modalPromptLabel').textContent = promptLabel;
-            document.getElementById('modalPromptText').textContent = promptData.raw;
-            document.getElementById('modalPassCount').textContent = promptData.metrics.testPassCount;
-            document.getElementById('modalFailCount').textContent = promptData.metrics.testFailCount;
-            document.getElementById('modalErrorCount').textContent = promptData.metrics.testErrorCount;
+            const baselinePrompt = Object.values(allPromptData).find(p => 
+                p.provider === model && p.label === Object.values(allPromptData)
+                    .filter(p => p.provider === model)
+                    .sort((a, b) => a.label.localeCompare(b.label))[0].label
+            );
+            
+            let comparisonHtml = '';
+            if (baselinePrompt && promptLabel !== baselinePrompt.label) {
+                const baselinePassRate = baselinePrompt.metrics.testPassCount / 
+                    (baselinePrompt.metrics.testPassCount + baselinePrompt.metrics.testFailCount + baselinePrompt.metrics.testErrorCount);
+                const currentPassRate = promptData.metrics.testPassCount / 
+                    (promptData.metrics.testPassCount + promptData.metrics.testFailCount + promptData.metrics.testErrorCount);
+                const percentageDiff = ((currentPassRate - baselinePassRate) / baselinePassRate * 100).toFixed(1);
+                comparisonHtml = `
+                    <div class="alert ${percentageDiff > 0 ? 'alert-success' : 'alert-danger'} mt-3">
+                        <strong>Comparison with ${baselinePrompt.label}:</strong> 
+                        ${percentageDiff > 0 ? 'Better' : 'Worse'} by ${Math.abs(percentageDiff)}%
+                    </div>`;
+            }
+            
+            Object.entries({
+                'modalModel': model,
+                'modalPromptLabel': promptLabel,
+                'modalPromptText': promptData.raw,
+                'modalPassCount': promptData.metrics.testPassCount,
+                'modalFailCount': promptData.metrics.testFailCount,
+                'modalErrorCount': promptData.metrics.testErrorCount
+            }).forEach(([id, value]) => document.getElementById(id).textContent = value);
             
             const {testPassCount, testFailCount, testErrorCount} = promptData.metrics;
             document.getElementById('testCasesList').innerHTML = testCases.slice(0, testPassCount + testFailCount + testErrorCount)
@@ -145,7 +332,7 @@
                             <div><strong>Input:</strong> ${test.a} × ${test.b}</div>
                             <div><strong>Expected:</strong> ${test.expected}</div>
                         </div>`;
-                }).join('');
+                }).join('') + comparisonHtml;
             
             new bootstrap.Modal(document.getElementById('testDetailsModal')).show();
         }
