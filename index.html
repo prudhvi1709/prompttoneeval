@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Model Evaluation Results</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <div class="container-fluid py-4">
+        <h1 class="text-center mb-4">Model Evaluation Results</h1>
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered" id="resultsTable">
+                <thead class="table-dark">
+                    <tr id="headerRow"></tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+        <div class="text-center mt-3">
+            <small class="text-muted">Scores shown as Pass/Total format. Click on any cell for details.</small>
+        </div>
+    </div>
+
+    <div class="modal fade" id="testDetailsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Test Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <p><strong>Model:</strong> <span id="modalModel"></span></p>
+                        <p><strong>Prompt Type:</strong> <span id="modalPromptLabel"></span></p>
+                        <div class="bg-light p-3 rounded">
+                            <code id="modalPromptText"></code>
+                        </div>
+                    </div>
+                    <div id="testCasesList"></div>
+                    <div class="mt-3">
+                        <span class="badge bg-success me-2">Passed: <span id="modalPassCount"></span></span>
+                        <span class="badge bg-danger me-2">Failed: <span id="modalFailCount"></span></span>
+                        <span class="badge bg-warning">Errors: <span id="modalErrorCount"></span></span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const testCases = [
+            { description: "Single digit multiplication (0-9)", a: 5, b: 7, expected: 35 },
+            { description: "Two digit multiplication with all digits", a: 12, b: 34, expected: 408 },
+            { description: "Three digit multiplication with all digits", a: 123, b: 456, expected: 56088 },
+            { description: "Four digit multiplication with all digits", a: 1234, b: 5678, expected: 7006652 },
+            { description: "Five digit multiplication with all digits", a: 12345, b: 67890, expected: 838102050 },
+            { description: "Six digit multiplication with all digits", a: 123456, b: 789012, expected: 97408265472 },
+            { description: "Seven digit multiplication with all digits", a: 1234567, b: 8901234, expected: 10989169755678 },
+            { description: "Eight digit multiplication with all digits", a: 12345678, b: 90123456, expected: 1113214789632768 },
+            { description: "Nine digit multiplication with all digits", a: 123456789, b: 987654321, expected: 121932631112635269 },
+            { description: "Ten digit multiplication with all digits", a: 1234567890, b: 9876543210, expected: 12193263111263526900 }
+        ];
+
+        let allPromptData = {};
+
+        async function loadAndDisplayResults() {
+            try {
+                const data = await (await fetch('results.json')).json();
+                allPromptData = Object.fromEntries(data.head.prompts.map(p => [`${p.provider}|${p.label}`, p]));
+                
+                const modelData = {};
+                const promptLabels = new Set();
+                
+                data.head.prompts.forEach(p => {
+                    if (!modelData[p.provider]) modelData[p.provider] = {};
+                    const total = p.metrics.testPassCount + p.metrics.testFailCount + p.metrics.testErrorCount;
+                    modelData[p.provider][p.label] = `${p.metrics.testPassCount}/${total}`;
+                    promptLabels.add(p.label);
+                });
+                
+                const sortedLabels = Array.from(promptLabels).sort();
+                const headerRow = document.getElementById('headerRow');
+                headerRow.innerHTML = `<th scope="col" class="text-center">Model</th>
+                    <th scope="col" class="text-center">Total</th>
+                    ${sortedLabels.map(l => `<th scope="col" class="text-center">${l}</th>`).join('')}`;
+                
+                const modelRows = Object.entries(modelData).map(([model, data]) => {
+                    const scores = Object.values(data).map(s => s.split('/').map(Number));
+                    const totalPass = scores.reduce((sum, [pass]) => sum + pass, 0);
+                    const totalTests = scores.reduce((sum, [, total]) => sum + total, 0);
+                    return { model, totalPass, totalTests, data };
+                });
+                
+                modelRows.sort((a, b) => (b.totalPass / b.totalTests) - (a.totalPass / a.totalTests));
+                
+                document.getElementById('tableBody').innerHTML = modelRows.map(({model, totalPass, totalTests, data}) => `
+                    <tr>
+                        <th scope="row" class="text-start">${model}</th>
+                        <td class="text-center fw-bold">${totalPass}/${totalTests}</td>
+                        ${sortedLabels.map(label => {
+                            const score = data[label] || '-';
+                            return `<td class="text-center" style="cursor: pointer" 
+                                ${score !== '-' ? `onclick="showTestDetails('${model}', '${label}')" title="Click for details"` : ''}>
+                                ${score}</td>`;
+                        }).join('')}
+                    </tr>
+                `).join('');
+                
+            } catch (error) {
+                console.error('Error loading results:', error);
+                document.getElementById('tableBody').innerHTML = 
+                    '<tr><td colspan="100%" class="text-center text-danger">Error loading results</td></tr>';
+            }
+        }
+
+        function showTestDetails(model, promptLabel) {
+            const promptData = allPromptData[`${model}|${promptLabel}`];
+            if (!promptData) return;
+            
+            document.getElementById('modalModel').textContent = model;
+            document.getElementById('modalPromptLabel').textContent = promptLabel;
+            document.getElementById('modalPromptText').textContent = promptData.raw;
+            document.getElementById('modalPassCount').textContent = promptData.metrics.testPassCount;
+            document.getElementById('modalFailCount').textContent = promptData.metrics.testFailCount;
+            document.getElementById('modalErrorCount').textContent = promptData.metrics.testErrorCount;
+            
+            const {testPassCount, testFailCount, testErrorCount} = promptData.metrics;
+            document.getElementById('testCasesList').innerHTML = testCases.slice(0, testPassCount + testFailCount + testErrorCount)
+                .map((test, i) => {
+                    const status = i < testPassCount ? ['passed', 'bg-success', 'PASSED'] :
+                                 i < testPassCount + testFailCount ? ['failed', 'bg-danger', 'FAILED'] :
+                                 ['error', 'bg-warning', 'ERROR'];
+                    return `
+                        <div class="border rounded p-2 mb-2">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <small class="text-muted">Test ${i + 1}</small>
+                                <span class="badge ${status[1]}">${status[2]}</span>
+                            </div>
+                            <div><strong>Description:</strong> ${test.description}</div>
+                            <div><strong>Input:</strong> ${test.a} × ${test.b}</div>
+                            <div><strong>Expected:</strong> ${test.expected}</div>
+                        </div>`;
+                }).join('');
+            
+            new bootstrap.Modal(document.getElementById('testDetailsModal')).show();
+        }
+        
+        window.addEventListener('DOMContentLoaded', loadAndDisplayResults);
+    </script>
+</body>
+</html> 
